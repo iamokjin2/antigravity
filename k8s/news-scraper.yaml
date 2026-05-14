@@ -19,6 +19,8 @@ spec:
           env:
             - name: TZ
               value: "Asia/Seoul"
+            - name: REDIS_URL
+              value: "redis://redis:6379"
             - name: KAFKA_BROKERS
               value: "my-cluster-kafka-bootstrap:9092"
             - name: KAFKA_TOPIC

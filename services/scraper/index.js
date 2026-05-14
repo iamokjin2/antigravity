@@ -2,6 +2,7 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const iconv = require('iconv-lite');
 const { Kafka } = require('kafkajs');
+const { createClient } = require('redis');
 require('dotenv').config();
 
 const kafka = new Kafka({ 
@@ -10,6 +11,9 @@ const kafka = new Kafka({
 });
 const producer = kafka.producer();
 const TOPIC = process.env.KAFKA_TOPIC || 'news-topic';
+
+const redisClient = createClient({ url: process.env.REDIS_URL || 'redis://localhost:31379' });
+redisClient.on('error', err => console.error('Redis Client Error', err));
 
 const fetchNews = async () => {
     try {
@@ -49,21 +53,32 @@ const fetchNews = async () => {
 
 const run = async () => {
     await producer.connect();
-    console.log('🚀 Naver News Scraper Producer started (K8S READY)...');
+    await redisClient.connect();
+    console.log('🚀 Naver News Scraper Producer started with Duplicate Detection...');
 
     const scrapeAndSend = async () => {
         const news = await fetchNews();
-        console.log(`📡 [${new Date().toLocaleTimeString()}] Scraping... Found ${news.length} articles.`);
+        let sentCount = 0;
         
         for (const item of news) {
-            await producer.send({
-                topic: TOPIC,
-                messages: [{ 
-                    key: item.press, 
-                    value: JSON.stringify(item) 
-                }]
-            });
+            // Check if link already exists in Redis
+            const isDuplicate = await redisClient.get(`seen:${item.link}`);
+            
+            if (!isDuplicate) {
+                await producer.send({
+                    topic: TOPIC,
+                    messages: [{ 
+                        key: item.press, 
+                        value: JSON.stringify(item) 
+                    }]
+                });
+                
+                // Mark as seen for 24 hours
+                await redisClient.set(`seen:${item.link}`, 'true', { EX: 86400 });
+                sentCount++;
+            }
         }
+        console.log(`📡 [${new Date().toLocaleTimeString()}] Scraping: Found ${news.length}, New: ${sentCount}`);
     };
 
     await scrapeAndSend();
