@@ -1,3 +1,4 @@
 {
-    "kafka.clusters.selected": "kafka2-bG9jYWxob3N0OjkwOTQ"
+    "kafka.clusters.selected": "kafka2-bG9jYWxob3N0OjkwOTQ",
+    "java.compile.nullAnalysis.mode": "automatic"
 }

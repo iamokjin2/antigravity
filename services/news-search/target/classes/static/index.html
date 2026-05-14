@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antigravity | Real-time News Search</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #a855f7;
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #22d3ee;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(168, 85, 247, 0.15) 0%, transparent 40%);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        header {
+            padding: 4rem 1rem 2rem;
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            margin-bottom: 3rem;
+        }
+
+        .search-container {
+            max-width: 800px;
+            margin: 0 auto 4rem;
+            position: relative;
+            padding: 0 1rem;
+        }
+
+        .search-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        input {
+            width: 100%;
+            padding: 1.5rem 2rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            color: white;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+            background: rgba(30, 41, 59, 0.9);
+        }
+
+        .main-layout {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            gap: 2rem;
+            padding: 0 2rem 5rem;
+        }
+
+        .news-section {
+            flex: 3;
+        }
+
+        .sidebar-section {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .ranking-card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 2rem;
+        }
+
+        .ranking-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .ranking-list {
+            list-style: none;
+        }
+
+        .ranking-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+
+        .ranking-item:last-child {
+            border-bottom: none;
+        }
+
+        .ranking-item:hover {
+            transform: translateX(5px);
+            color: var(--accent);
+        }
+
+        .ranking-number {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary);
+            width: 30px;
+            margin-right: 1rem;
+        }
+
+        .ranking-keyword {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .ranking-count {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.2rem 0.6rem;
+            border-radius: 10px;
+        }
+
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .news-card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            backdrop-filter: blur(8px);
+        }
+
+        .news-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(99, 102, 241, 0.4);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            background: rgba(30, 41, 59, 0.85);
+        }
+
+        .news-press {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1rem;
+        }
+
+        .news-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 500;
+            color: var(--text);
+            margin-bottom: 1.5rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.4;
+        }
+
+        .news-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .news-link {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: opacity 0.2s;
+        }
+
+        .news-link:hover {
+            opacity: 0.8;
+            text-decoration: underline;
+        }
+
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid #FFF;
+            border-bottom-color: var(--primary);
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+            position: fixed;
+            left: 50%;
+            margin-left: -24px;
+            top: 50%;
+            display: none;
+            z-index: 100;
+        }
+
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .news-card, .ranking-item {
+            animation: fadeIn 0.6s ease forwards;
+        }
+
+        @media (max-width: 1024px) {
+            .main-layout { flex-direction: column; }
+            .sidebar-section { min-width: 100%; }
+            .ranking-card { position: static; }
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5rem; }
+            .news-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Antigravity News</h1>
+        <p class="subtitle">Streamlined Real-time News Intelligence from Naver</p>
+    </header>
+
+    <div class="search-container">
+        <div class="search-wrapper">
+            <input type="text" id="searchInput" placeholder="Search keywords, press, or topics..." autocomplete="off">
+        </div>
+    </div>
+
+    <div class="loader" id="loader"></div>
+
+    <main class="main-layout">
+        <section class="news-section">
+            <div class="news-grid" id="newsGrid">
+                <!-- News items will be injected here -->
+            </div>
+        </section>
+
+        <aside class="sidebar-section">
+            <div class="ranking-card">
+                <h2 class="ranking-title">🔥 Trending Keywords</h2>
+                <div class="ranking-list" id="rankingList">
+                    <!-- Ranking items will be injected here -->
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const newsGrid = document.getElementById('newsGrid');
+        const rankingList = document.getElementById('rankingList');
+        const loader = document.getElementById('loader');
+
+        let debounceTimer;
+
+        async function fetchNews(query = '') {
+            loader.style.display = 'inline-block';
+            newsGrid.style.opacity = '0.5';
+            
+            try {
+                const response = await fetch(`/api/news/search?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                renderNews(data);
+            } catch (error) {
+                console.error('Fetch error:', error);
+            } finally {
+                loader.style.display = 'none';
+                newsGrid.style.opacity = '1';
+            }
+        }
+
+        async function fetchTrending() {
+            try {
+                const response = await fetch('/api/news/trending');
+                const data = await response.json();
+                renderTrending(data);
+            } catch (error) {
+                console.error('Trending fetch error:', error);
+            }
+        }
+
+        function renderTrending(trending) {
+            rankingList.innerHTML = '';
+            trending.forEach((item, index) => {
+                const el = document.createElement('div');
+                el.className = 'ranking-item';
+                el.style.animationDelay = `${index * 0.1}s`;
+                el.innerHTML = `
+                    <span class="ranking-number">${index + 1}</span>
+                    <span class="ranking-keyword">${item.keyword}</span>
+                    <span class="ranking-count">${item.count}</span>
+                `;
+                el.onclick = () => {
+                    searchInput.value = item.keyword;
+                    fetchNews(item.keyword);
+                };
+                rankingList.appendChild(el);
+            });
+        }
+
+        function renderNews(news) {
+            newsGrid.innerHTML = '';
+            if (news.length === 0) {
+                newsGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 4rem;">No results found. Try another keyword.</div>';
+                return;
+            }
+
+            news.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'news-card';
+                card.style.animationDelay = `${index * 0.05}s`;
+                
+                const date = new Date(item.createdAt).toLocaleString('ko-KR', {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                card.innerHTML = `
+                    <div class="news-press">${item.press}</div>
+                    <div class="news-title">${item.title}</div>
+                    <div class="news-meta">
+                        <span>${date}</span>
+                        <a href="${item.link}" target="_blank" class="news-link">Read Full Story →</a>
+                    </div>
+                `;
+                
+                card.onclick = () => window.open(item.link, '_blank');
+                newsGrid.appendChild(card);
+            });
+        }
+
+        searchInput.oninput = (e) => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                fetchNews(e.target.value);
+            }, 300);
+        };
+
+        // Initial Load
+        fetchNews();
+        fetchTrending();
+        setInterval(fetchTrending, 60000); // Update every minute
+    </script>
+</body>
+</html>

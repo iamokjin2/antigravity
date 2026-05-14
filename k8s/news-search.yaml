@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: news-search
+  namespace: kafka
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: news-search
+  template:
+    metadata:
+      labels:
+        app: news-search
+    spec:
+      containers:
+        - name: news-search
+          image: iamokjin/news-search:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: TZ
+              value: "Asia/Seoul"
+            - name: DB_HOST
+              value: "postgres"
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_USER
+              value: "postgres"
+            - name: DB_PASSWORD
+              value: "antigravity"
+            - name: DB_NAME
+              value: "kafka_logs"
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "1000m"
+              memory: "512Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: news-search
+  namespace: kafka
+spec:
+  type: NodePort
+  ports:
+    - port: 80
+      targetPort: 8080
+      nodePort: 31080
+  selector:
+    app: news-search
