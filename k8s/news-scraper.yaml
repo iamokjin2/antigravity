@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: news-scraper
+  namespace: kafka
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: news-scraper
+  template:
+    metadata:
+      labels:
+        app: news-scraper
+    spec:
+      containers:
+      - name: news-scraper
+        image: ${DOCKERHUB_USERNAME}/news-scraper:latest
+        env:
+        - name: KAFKA_BROKERS
+          value: "my-cluster-kafka-bootstrap:9092"
+        - name: KAFKA_TOPIC
+          value: "news-topic"
+---
+# Note: ${DOCKERHUB_USERNAME} should be replaced with actual username or handled via CD

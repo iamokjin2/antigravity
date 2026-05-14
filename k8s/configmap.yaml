@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kafka-config
+  namespace: default
+data:
+  KAFKA_BROKERS: "my-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092"
+  KAFKA_CLIENT_ID: "antigravity-extension"
+  KAFKA_GROUP_ID: "antigravity-group"

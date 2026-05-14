@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kafka-test-client
+  namespace: default
+spec:
+  containers:
+  - name: node-app
+    image: node:18-slim
+    command: ["sh", "-c", "npm install kafkajs dotenv && node src/kafkaClient.js"]
+    envFrom:
+      - configMapRef:
+          name: kafka-config
+    workingDir: /app
+    volumeMounts:
+    - name: app-source
+      mountPath: /app
+  volumes:
+  - name: app-source
+    hostPath:
+      path: C:/neo/antigravity/project1
+  restartPolicy: Never
