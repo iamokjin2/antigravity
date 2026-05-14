@@ -25,5 +25,12 @@ spec:
               value: "my-cluster-kafka-bootstrap:9092"
             - name: KAFKA_TOPIC
               value: "news-topic"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
 ---
 # Note: ${DOCKERHUB_USERNAME} should be replaced with actual username or handled via CD
