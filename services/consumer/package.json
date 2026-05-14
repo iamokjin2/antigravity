@@ -1,0 +1,11 @@
+{
+  "name": "news-consumer",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "kafkajs": "^2.2.4",
+    "pg": "^8.20.0",
+    "redis": "^5.12.1"
+  }
+}
