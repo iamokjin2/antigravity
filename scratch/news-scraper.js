@@ -76,7 +76,7 @@ const run = async () => {
     };
 
     await scrapeAndSend();
-    setInterval(scrapeAndSend, 10000);
+    setInterval(scrapeAndSend, 20000);
 };
 
 run().catch(console.error);
