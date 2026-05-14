@@ -1,0 +1,25 @@
+name: Deploy Consumer Redis
+
+on:
+  push:
+    paths:
+      - 'services/consumer-redis/**'
+      - '.github/workflows/deploy-consumer-redis.yml'
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Login to DockerHub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Build and push
+      uses: docker/build-push-action@v4
+      with:
+        context: ./services/consumer-redis
+        push: true
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/news-consumer-redis:latest

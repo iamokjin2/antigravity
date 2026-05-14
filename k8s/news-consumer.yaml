@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: news-consumer
+  namespace: kafka
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: news-consumer
+  template:
+    metadata:
+      labels:
+        app: news-consumer
+    spec:
+      containers:
+        - name: news-consumer
+          image: iamokjin/news-consumer:latest
+          env:
+            - name: TZ
+              value: "Asia/Seoul"
+            - name: KAFKA_BROKERS
+              value: "my-cluster-kafka-bootstrap:9092"
+            - name: KAFKA_TOPIC
+              value: "news-topic"
+            - name: REDIS_URL
+              value: "redis://redis:6379"
+            - name: DB_HOST
+              value: "postgres"
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_USER
+              value: "postgres"
+            - name: DB_PASSWORD
+              value: "antigravity"
+            - name: DB_NAME
+              value: "kafka_logs"
+            - name: WORKER_COUNT
+              value: "10"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
