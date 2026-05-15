@@ -62,7 +62,10 @@ const fetchNews = async () => {
                              $article('.journalist_card_name').first().text().trim() ||
                              $article('em[class*="journalist"]').first().text().trim();
                     
-                    author = author.replace(/기자.*/, '기자').replace(/\s+/g, ' ').trim();
+                    if (author.includes('기자')) {
+                        author = author.split('기자')[0] + '기자';
+                    }
+                    author = author.replace(/\s+/g, ' ').trim();
 
                     const contentEl = $article('#dic_area').length ? $article('#dic_area') : 
                                      ($article('#articleBodyContents').length ? $article('#articleBodyContents') : $article('.article_body'));

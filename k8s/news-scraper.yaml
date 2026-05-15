@@ -34,10 +34,16 @@ spec:
             - name: tz-seoul
               mountPath: /etc/localtime
               readOnly: true
+            - name: scraper-src
+              mountPath: /app/index.js
+              subPath: index.js
       volumes:
         - name: tz-seoul
           hostPath:
             path: /usr/share/zoneinfo/Asia/Seoul
             type: File
+        - name: scraper-src
+          configMap:
+            name: scraper-config
 ---
 # Note: ${DOCKERHUB_USERNAME} should be replaced with actual username or handled via CD
