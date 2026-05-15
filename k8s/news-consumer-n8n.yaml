@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: news-consumer-n8n
+  namespace: kafka
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: news-consumer-n8n
+  template:
+    metadata:
+      labels:
+        app: news-consumer-n8n
+    spec:
+      containers:
+        - name: news-consumer-n8n
+          image: iamokjin/news-consumer-n8n:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: TZ
+              value: "Asia/Seoul"
+            - name: KAFKA_BROKERS
+              value: "my-cluster-kafka-bootstrap:9092"
+            - name: KAFKA_TOPIC
+              value: "news-topic"
+            - name: N8N_WEBHOOK_URL
+              value: "http://n8n.n8n.svc.cluster.local:5678/webhook/3172806b-8f68-448c-8458-4aa0ab18e4c0"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"

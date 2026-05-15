@@ -1,0 +1,11 @@
+{
+  "name": "news-consumer-n8n",
+  "version": "1.0.0",
+  "description": "Kafka consumer that sends news titles to n8n",
+  "main": "index.js",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "dotenv": "^16.3.1",
+    "kafkajs": "^2.2.4"
+  }
+}
