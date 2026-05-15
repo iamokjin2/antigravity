@@ -15,10 +15,8 @@ spec:
     spec:
       containers:
         - name: news-scraper
-          image: iamokjin/news-scraper:latest
+          image: iamokjin/news-scraper:v1.0.2
           env:
-            - name: TZ
-              value: "Asia/Seoul"
             - name: REDIS_URL
               value: "redis://redis:6379"
             - name: KAFKA_BROKERS
@@ -32,5 +30,14 @@ spec:
             limits:
               cpu: "500m"
               memory: "256Mi"
+          volumeMounts:
+            - name: tz-seoul
+              mountPath: /etc/localtime
+              readOnly: true
+      volumes:
+        - name: tz-seoul
+          hostPath:
+            path: /usr/share/zoneinfo/Asia/Seoul
+            type: File
 ---
 # Note: ${DOCKERHUB_USERNAME} should be replaced with actual username or handled via CD

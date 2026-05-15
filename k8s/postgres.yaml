@@ -21,6 +21,8 @@ spec:
           value: "antigravity"
         - name: POSTGRES_DB
           value: "kafka_logs"
+        - name: TZ
+          value: "Asia/Seoul"
         ports:
         - containerPort: 5432
         volumeMounts:

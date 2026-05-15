@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes Cluster Architecture - Project Antigravity</title>
+    <style>
+        :root {
+            --primary: #00d2ff;
+            --secondary: #3a7bd5;
+            --bg-dark: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --accent: #10b981;
+            --warning: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        h1 {
+            font-size: 3rem;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            color: var(--text-dim);
+            font-size: 1.2rem;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            margin: 40px 0 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-left: 4px solid var(--primary);
+            padding-left: 15px;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 210, 255, 0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-running { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+
+        /* Node Information Table */
+        .table-container {
+            background: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 40px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px 20px;
+            color: var(--text-dim);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+
+        td {
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        tr:last-child td { border-bottom: none; }
+
+        .nodeport-badge {
+            background: rgba(58, 123, 213, 0.2);
+            color: #60a5fa;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        /* Cluster Visualizer (Simplified) */
+        .visualizer {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+            position: relative;
+        }
+
+        .node-box {
+            border: 2px dashed var(--primary);
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            position: relative;
+        }
+
+        .node-box::before {
+            content: "NODE: docker-desktop (Control Plane)";
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: var(--bg-dark);
+            padding: 0 10px;
+            color: var(--primary);
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .pod-box {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+
+        .pod-icon {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        /* Animations */
+        .pulse {
+            animation: pulse-animation 2s infinite;
+        }
+
+        @keyframes pulse-animation {
+            0% { box-shadow: 0 0 0 0px rgba(0, 210, 255, 0.2); }
+            100% { box-shadow: 0 0 0 15px rgba(0, 210, 255, 0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>K8s Cluster Architecture</h1>
+        <p class="subtitle">Real-time Service & Node Configuration Status</p>
+    </header>
+
+    <div class="dashboard-grid">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Nodes</span>
+                <span class="status-badge status-running">Stable</span>
+            </div>
+            <div class="stat-value">1</div>
+            <p style="color: var(--text-dim)">docker-desktop (Control Plane)</p>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Active Services</span>
+                <span class="status-badge status-running">9 Total</span>
+            </div>
+            <div class="stat-value">4 NodePorts</div>
+            <p style="color: var(--text-dim)">External Access Points Configured</p>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Pods (kafka namespace)</span>
+                <span class="status-badge status-running">Healthy</span>
+            </div>
+            <div class="stat-value">13</div>
+            <p style="color: var(--text-dim)">All containers are Running</p>
+        </div>
+    </div>
+
+    <h2 class="section-title">External Access Services (NodePorts)</h2>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Service Name</th>
+                    <th>Namespace</th>
+                    <th>Cluster IP</th>
+                    <th>Internal Port</th>
+                    <th>NodePort (External)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="font-weight: 600;">news-search</td>
+                    <td>kafka</td>
+                    <td>10.97.38.77</td>
+                    <td>80/TCP</td>
+                    <td><span class="nodeport-badge">31080</span></td>
+                </tr>
+                <tr>
+                    <td style="font-weight: 600;">postgres</td>
+                    <td>kafka</td>
+                    <td>10.106.102.198</td>
+                    <td>5432/TCP</td>
+                    <td><span class="nodeport-badge">31432</span></td>
+                </tr>
+                <tr>
+                    <td style="font-weight: 600;">redis</td>
+                    <td>kafka</td>
+                    <td>10.105.177.213</td>
+                    <td>6379/TCP</td>
+                    <td><span class="nodeport-badge">31379</span></td>
+                </tr>
+                <tr>
+                    <td style="font-weight: 600;">kafka-bootstrap</td>
+                    <td>kafka</td>
+                    <td>10.106.28.149</td>
+                    <td>9094/TCP</td>
+                    <td><span class="nodeport-badge">31175</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h2 class="section-title">Cluster Logical Layout</h2>
+    <div class="visualizer">
+        <div class="node-box pulse">
+            <div class="pod-box">
+                <div class="pod-icon">🔍</div>
+                <div style="font-weight: 600">news-search</div>
+                <div style="font-size: 0.75rem; color: var(--text-dim)">1 Replica</div>
+            </div>
+            <div class="pod-box">
+                <div class="pod-icon">🕷️</div>
+                <div style="font-weight: 600">news-scraper</div>
+                <div style="font-size: 0.75rem; color: var(--text-dim)">1 Replica</div>
+            </div>
+            <div class="pod-box">
+                <div class="pod-icon">💾</div>
+                <div style="font-weight: 600">consumer-pg</div>
+                <div style="font-size: 0.75rem; color: var(--text-dim)">5 Replicas</div>
+            </div>
+            <div class="pod-box">
+                <div class="pod-icon">⚡</div>
+                <div style="font-weight: 600">consumer-redis</div>
+                <div style="font-size: 0.75rem; color: var(--text-dim)">1 Replica</div>
+            </div>
+            <div class="pod-box">
+                <div class="pod-icon">🐘</div>
+                <div style="font-weight: 600">PostgreSQL</div>
+                <div style="font-size: 0.75rem; color: var(--text-dim)">v15-alpine</div>
+            </div>
+            <div class="pod-box">
+                <div class="pod-icon">🔴</div>
+                <div style="font-weight: 600">Redis</div>
+                <div style="font-size: 0.75rem; color: var(--text-dim)">Latest</div>
+            </div>
+            <div class="pod-box">
+                <div class="pod-icon">⚙️</div>
+                <div style="font-weight: 600">Kafka Cluster</div>
+                <div style="font-size: 0.75rem; color: var(--text-dim)">Strimzi Managed</div>
+            </div>
+        </div>
+    </div>
+
+    <h2 class="section-title">Node Resources (docker-desktop)</h2>
+    <div class="dashboard-grid">
+        <div class="card">
+            <div class="card-title">CPU</div>
+            <div class="stat-value">16 Cores</div>
+        </div>
+        <div class="card">
+            <div class="card-title">Memory</div>
+            <div class="stat-value">7.94 GB</div>
+        </div>
+        <div class="card">
+            <div class="card-title">Storage</div>
+            <div class="stat-value">1.05 TB</div>
+        </div>
+    </div>
+
+    <div class="footer">
+        &copy; 2026 Project Antigravity Infrastructure Report | Generated on 2026-05-15
+    </div>
+</div>
+
+</body>
+</html>

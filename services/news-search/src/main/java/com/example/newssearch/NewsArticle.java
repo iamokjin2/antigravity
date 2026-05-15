@@ -15,6 +15,9 @@ public class NewsArticle {
     private String press;
     private String title;
     private String link;
+    private String author;
+    private String content;
+    private String thumbnail;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

@@ -21,16 +21,32 @@ const run = async () => {
     });
     await pgClient.connect();
 
-    // Ensure table exists
+    // Ensure table exists with new columns
     await pgClient.query(`
         CREATE TABLE IF NOT EXISTS news_history (
             id SERIAL PRIMARY KEY,
             press VARCHAR(100),
             title TEXT,
             link TEXT,
+            author VARCHAR(100),
+            content TEXT,
+            thumbnail TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     `);
+
+    // Migration: Add columns if they don't exist
+    const columns = ['author', 'content', 'thumbnail'];
+    for (const col of columns) {
+        await pgClient.query(`
+            DO $$ 
+            BEGIN 
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='news_history' AND column_name='${col}') THEN
+                    ALTER TABLE news_history ADD COLUMN ${col} TEXT;
+                END IF;
+            END $$;
+        `);
+    }
 
     const consumer = kafka.consumer({ groupId: GROUP_ID });
     await consumer.connect();
@@ -38,13 +54,22 @@ const run = async () => {
 
     console.log('🐘 News Postgres Consumer started.');
 
+    let firstLogDone = false;
+
     await consumer.run({
         eachMessage: async ({ message }) => {
             try {
                 const data = JSON.parse(message.value.toString());
+                
+                if (!firstLogDone) {
+                    console.log('📦 [Postgres] Received Data Sample:');
+                    console.log(JSON.stringify(data, null, 2));
+                    firstLogDone = true;
+                }
+
                 await pgClient.query(
-                    'INSERT INTO news_history (press, title, link) VALUES ($1, $2, $3)',
-                    [data.press, data.title, data.link]
+                    'INSERT INTO news_history (press, title, link, author, content, thumbnail) VALUES ($1, $2, $3, $4, $5, $6)',
+                    [data.press, data.title, data.link, data.author || '', data.content || '', data.thumbnail || '']
                 );
                 console.log(`✅ [Postgres] Inserted: ${data.title.substring(0, 30)}...`);
             } catch (err) {
