@@ -22,13 +22,22 @@ const run = async () => {
     await consumer.run({
         eachMessage: async ({ message }) => {
             try {
-                const data = JSON.parse(message.value.toString());
+                const rawValue = message.value.toString();
+                console.log(`📦 Raw message: ${rawValue}`);
+                const data = JSON.parse(rawValue);
+                console.log(`🔍 Parsed data:`, data);
+                
                 const newsTitle = data.title;
+                const newsTime = data.timestamp;
+                const newsPress = data.press;
+                const sentTime = new Date().toISOString();
+
+                const formattedMessage = `📢 [${newsPress}] ${newsTitle}\n⏰ 수집시간: ${sentTime}\n🕒 뉴스시간: ${newsTime}`;
 
                 console.log(`📡 Sending to n8n: ${newsTitle.substring(0, 30)}...`);
 
                 await axios.post(N8N_WEBHOOK_URL, {
-                    message: newsTitle
+                    message: formattedMessage
                 });
 
                 console.log(`✅ [n8n] Successfully sent: ${newsTitle.substring(0, 30)}...`);
