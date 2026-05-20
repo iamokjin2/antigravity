@@ -13,9 +13,10 @@ const run = async () => {
         brokers: BROKERS,
     });
 
-    const consumer = kafka.consumer({ groupId: GROUP_ID });
+    const randomGroupId = `${GROUP_ID}-${Math.random().toString(36).substring(2, 10)}`;
+    const consumer = kafka.consumer({ groupId: randomGroupId });
     await consumer.connect();
-    await consumer.subscribe({ topic: TOPIC, fromBeginning: true });
+    await consumer.subscribe({ topic: TOPIC, fromBeginning: false });
 
     console.log('🚀 News n8n Consumer started.');
 
